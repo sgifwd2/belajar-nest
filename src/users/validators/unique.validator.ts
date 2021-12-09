@@ -33,7 +33,6 @@ export class UniqueConstraint implements ValidatorConstraintInterface {
     const isAlreadyExist = !!(await repository.findOne({
       [args.property]: value,
     }));
-    console.log(isAlreadyExist);
 
     return !isAlreadyExist;
   }

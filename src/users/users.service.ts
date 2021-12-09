@@ -13,12 +13,7 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = new User();
-
-    user.email = createUserDto.email;
-    user.password = createUserDto.password;
-
-    return await this.usersRepository.save(user);
+    return await this.usersRepository.save<User>(createUserDto);
   }
 
   async findAll(): Promise<User[]> {
@@ -42,13 +37,13 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.findOne(id);
+    const user = await this.usersRepository.findOne(id);
 
     if (!user) throw new NotFoundException('User not found');
 
     user.email = updateUserDto.email ?? user.email;
 
-    return await this.usersRepository.save(user);
+    return await this.usersRepository.save<User>(user);
   }
 
   async remove(id: number): Promise<User> {

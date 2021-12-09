@@ -1,33 +1,43 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/entities/user.entity';
 import { AccessTokenDto } from './dto/access-token.dto';
+import { UsersMapper } from 'src/users/users.mapper';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UsersService,
+    private userMapper: UsersMapper,
     private jwtService: JwtService,
   ) {}
 
   async validateUser(email: string, password: string) {
-    const user = await this.userService.findOneByEmail(email);
+    try {
+      const user = await this.userService.findOneByEmail(email);
 
-    if (user && user.password === password) {
-      delete user.password;
+      if (user && user.password === password) {
+        return this.userMapper.mapUserToDto(user);
+      }
 
-      return user;
+      return null;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw new UnauthorizedException();
+
+      throw error;
     }
-
-    return null;
   }
 
   async login(user: Omit<User, 'password'>): Promise<AccessTokenDto> {
     const payload = { id: user.id, email: user.email };
 
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
     };
   }
 }
